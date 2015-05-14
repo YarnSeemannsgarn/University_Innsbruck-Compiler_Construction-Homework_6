@@ -1,86 +1,72 @@
 %{ 
 #include <stdio.h>
 
-typedef enum { NT_PROGRAM, NT_ASSIGN, NT_IF, NT_WHILE, NT_STATEMENT, NT_CONST, NT_VAR, NT_TYPE, NT_EXPR, NT_INT_CONST, NT_REAL_CONST, NT_BOOL_CONST, NT_STRING_CONST, NT_IDENTIFIER, NT_OP } node_type;
-typedef enum { OP_PLUS, OP_MINUS, OP_MUL, OP_DIV, OP_MOD, OP_LT, OP_LE, OP_GT, OP_GE, OP_EQ, OP_NE, OP_AND, OP_OR } operator;
+typedef enum { PROGRAM, ASSIGN, IF, WHILE, STATEMENT, CONST, VAR, TYPE, EXPR, INT_CONST, REAL_CONST, BOOL_CONST, STRING_CONST, IDENTIFIER, OP } node_type;
+typedef enum { PLUS, MINUS, MUL, DIV, MOD, LT, LE, GT, GE, EQ, NE, AND, OR } operator;
 
-// Node values as union
-typedef union { 
-    int iValue; /* integer, true, false, compOp, addOp, mulOp */
-    float fValue;
-    /* number */
-    char *identifier;
-    /* identifier */
-    /* list of BNF right-hand side symbols of nonterminal type */
-    struct _node *body;
-} node_value;
-
-// Node
 typedef struct _node {
     node_type type;
-    node_value val;
-    struct _node *next ;
-    /* decl-list, stmt-list */
+    union {
+	int iValue; /* integer, true, false, compOp, addOp, mulOp */
+	float fValue; /* number */
+	char *identifier; /* identifier */
+	/* list of BNF right-hand side symbols of nonterminal type */
+	struct _node *body;
+    };
+    struct _node *next; /* decl-list, stmt-list */
 } node;
 
-// Union Helper
-typedef enum { int_val_type, float_val_type, char_val_type, node_val_type } node_value_type;
-typedef struct union_node_describer_s {
-    node_value_type val_type;
-    node_value val;
-} union_node_describer;
-
 // Prototypes
-node *mknode(node_type type, union_node_describer node_describer, node *next);
+node *mknode();
 void yyerror(char *);
 %}
 
 // Tokens from homework 4
-%token		/* Keywords */ PROGRAM VAR INTEGER ARRAY OF REAL BOOLEAN _BEGIN /* BEGIN is already a builtin keyword */ WHILE DO IF THEN ELSE END FOR TO DOWNTO READ WRITE DIV MOD AND OR TRUE FALSE NOT 
-                /* Special symbols */ SEMICOLON COMMA ASSIGNMENT COLON LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET DOT_DOT DOT LEFT_BRACKET RIGHT_BRACKET STAR SLASH PLUS MINUS UNEQUAL LESS_THAN GREATER_THAN GREATER_EQUAL_THAN LESS_EQUAL_THAN EQUAL STRING 
-                /* Numbers */ NUMBER 
-                /* Identifiers */ ID
+%token		/* Keywords */ T_PROGRAM T_VAR T_INTEGER T_ARRAY T_OF T_REAL T_BOOLEAN T_BEGIN T_WHILE T_DO T_IF T_THEN T_ELSE T_END T_FOR T_TO T_DOWNTO T_READ T_WRITE T_DIV T_MOD T_AND T_OR T_TRUE T_FALSE T_NOT 
+                /* Special symbols */ T_SEMICOLON T_COMMA T_ASSIGNMENT T_COLON T_LEFT_SQUARE_BRACKET T_RIGHT_SQUARE_BRACKET T_DOT_DOT T_DOT T_LEFT_BRACKET T_RIGHT_BRACKET T_STAR T_SLASH T_PLUS T_MINUS T_UNEQUAL T_LESS_THAN T_GREATER_THAN T_GREATER_EQUAL_THAN T_LESS_EQUAL_THAN T_EQUAL T_STRING 
+                /* Numbers */ T_NUMBER 
+                /* Identifiers */ T_ID
 			
 %start	        start
 
 // see http://www.gnu.org/software/bison/manual/html_node/Shift_002fReduce.html
 // see http://www.gnu.org/software/bison/manual/html_node/Non-Operators.html#Non-Operators
-%right THEN ELSE
+%right T_THEN T_ELSE
 
 %%
 
 // Grammar from homework 4
-start                   : PROGRAM ID SEMICOLON varDec compStmt DOT
+start                   : T_PROGRAM T_ID T_SEMICOLON varDec compStmt T_DOT
                         ;
 
-varDec 		        : VAR varDecList 
+varDec 		        : T_VAR varDecList 
 		        | /* ε */
                         ;
 
-varDecList              : varDecList identListType SEMICOLON 
-                        | identListType SEMICOLON
+varDecList              : varDecList identListType T_SEMICOLON 
+                        | identListType T_SEMICOLON
                         ;
 
-identListType           : identList COLON type
+identListType           : identList T_COLON type
                         ;
  
-identList               : identList COMMA ID 
-                        | ID
+identList               : identList T_COMMA T_ID 
+                        | T_ID
                         ;
 		 
 type                    : simpleType
-                        | ARRAY LEFT_SQUARE_BRACKET NUMBER DOT_DOT NUMBER RIGHT_SQUARE_BRACKET OF simpleType
+                        | T_ARRAY T_LEFT_SQUARE_BRACKET T_NUMBER T_DOT_DOT T_NUMBER T_RIGHT_SQUARE_BRACKET T_OF simpleType
                         ;
  
-simpleType	        : INTEGER
-                        | REAL
-                        | BOOLEAN
+simpleType	        : T_INTEGER
+                        | T_REAL
+                        | T_BOOLEAN
                         ;
  
-compStmt	        : _BEGIN stmtList END
+compStmt	        : T_BEGIN stmtList T_END
                         ;
 
-stmtList                : stmtList SEMICOLON statement 
+stmtList                : stmtList T_SEMICOLON statement 
                         | statement
                         ;
  
@@ -89,33 +75,33 @@ statement	        : assignStmt
 		        | ifStmt
 		        | whileStmt
 		        | forStmt
-		        | READ LEFT_BRACKET exprList RIGHT_BRACKET
-		        | WRITE LEFT_BRACKET exprList RIGHT_BRACKET
+		        | T_READ T_LEFT_BRACKET exprList T_RIGHT_BRACKET
+		        | T_WRITE T_LEFT_BRACKET exprList T_RIGHT_BRACKET
                         ;
 
-assignStmt              : ID ASSIGNMENT expr 
-                        | ID LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET ASSIGNMENT expr
+assignStmt              : T_ID T_ASSIGNMENT expr 
+                        | T_ID T_LEFT_SQUARE_BRACKET expr T_RIGHT_SQUARE_BRACKET T_ASSIGNMENT expr
                         ;
  
-ifStmt		        : IF expr THEN statement
-                        | IF expr THEN statement ELSE statement	
+ifStmt		        : T_IF expr T_THEN statement
+                        | T_IF expr T_THEN statement T_ELSE statement	
                         ;
  
-whileStmt	        : WHILE expr DO statement
+whileStmt	        : T_WHILE expr T_DO statement
                         ;
  
-forStmt		        : FOR ID ASSIGNMENT expr toPart expr DO statement
+forStmt		        : T_FOR T_ID T_ASSIGNMENT expr toPart expr T_DO statement
                         ;
  
-toPart		        : TO
-		        | DOWNTO
+toPart		        : T_TO
+		        | T_DOWNTO
                         ;
  
 expr                    : simpleExpr relOp simpleExpr
                         | simpleExpr
                         ;
 
-exprList                : exprList COMMA expr 
+exprList                : exprList T_COMMA expr 
                         | expr
                         ;
 
@@ -128,56 +114,41 @@ term                    : term mulOp factor
                         | factor
                         ;
 
-factor		        : NUMBER {union_node_describer node_describer; node_describer.val_type = int_val_type; node_describer.val.iValue = (int)yylval; $$ = mknode(NT_INT_CONST, node_describer, NULL); }
-		        | FALSE
-		        | TRUE
-		        | ID
-                        | ID LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET	
-		        | NOT factor
-		        | MINUS factor
-		        | LEFT_BRACKET expr RIGHT_BRACKET
-		        | STRING
+factor		        : T_NUMBER
+		        | T_FALSE
+		        | T_TRUE
+		        | T_ID
+                        | T_ID T_LEFT_SQUARE_BRACKET expr T_RIGHT_SQUARE_BRACKET	
+		        | T_NOT factor
+		        | T_MINUS factor
+		        | T_LEFT_BRACKET expr T_RIGHT_BRACKET
+		        | T_STRING
                         ;
  		        
-relOp		        : LESS_THAN
-		        | LESS_EQUAL_THAN
-		        | GREATER_THAN
-		        | GREATER_EQUAL_THAN
-		        | EQUAL
-		        | UNEQUAL
+relOp		        : T_LESS_THAN
+		        | T_LESS_EQUAL_THAN
+		        | T_GREATER_THAN
+		        | T_GREATER_EQUAL_THAN
+		        | T_EQUAL
+		        | T_UNEQUAL
                         ;
  		        
-addOp		        : PLUS
-		        | MINUS
-		        | OR
+addOp		        : T_PLUS
+		        | T_MINUS
+		        | T_OR
                         ;
  		        
-mulOp		        : STAR
-		        | SLASH
-		        | DIV
-		        | MOD
-		        | AND
+mulOp		        : T_STAR
+		        | T_SLASH
+		        | T_DIV
+		        | T_MOD
+		        | T_AND
                         ;
 
 %%
 
-node *mknode(node_type type, union_node_describer node_describer, node *next){
-    node *newnode = (node *)malloc(sizeof(node));
+node *mknode(){
 
-    newnode->type = type;
-    
-    node_value n_val;
-    switch(node_describer.val_type){
-    case int_val_type: n_val.iValue = node_describer.val.iValue; break;
-    case float_val_type: n_val.fValue = node_describer.val.fValue; break;
-    case char_val_type: n_val.identifier = node_describer.val.identifier; break;
-    case node_val_type: n_val.body = node_describer.val.body; break;
-    }
-
-    newnode->val = n_val;
-    newnode->next = next;
-    
-    return(newnode);
 }
 
 void printTree(node *tree)
