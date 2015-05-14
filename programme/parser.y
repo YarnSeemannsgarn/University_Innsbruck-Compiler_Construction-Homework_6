@@ -17,7 +17,7 @@ typedef struct _node {
 } node;
 
 // Prototypes
-node *mknode();
+node *new_node(node_type type);
 void yyerror(char *);
 %}
 
@@ -27,16 +27,24 @@ void yyerror(char *);
                 /* Numbers */ T_NUMBER 
                 /* Identifiers */ T_ID
 			
-%start	        start
+%start	        program
 
 // see http://www.gnu.org/software/bison/manual/html_node/Shift_002fReduce.html
 // see http://www.gnu.org/software/bison/manual/html_node/Non-Operators.html#Non-Operators
 %right T_THEN T_ELSE
 
+%union {
+    struct _node *n;
+}
+
+%type <n> program varDec compStmt /* TODO: Add more */
+
 %%
 
 // Grammar from homework 4
-start                   : T_PROGRAM T_ID T_SEMICOLON varDec compStmt T_DOT
+program                 : T_PROGRAM T_ID T_SEMICOLON varDec compStmt T_DOT { $$ = new_node(PROGRAM); 
+                                                                             $$->body = $4;
+                                                                             $4->body = $5; }
                         ;
 
 varDec 		        : T_VAR varDecList 
@@ -147,8 +155,13 @@ mulOp		        : T_STAR
 
 %%
 
-node *mknode(){
+node *new_node(node_type type){
+    node *new_node = (node *)malloc(sizeof(node));
+    new_node->type = type;
 
+    new_node->next = NULL;
+
+    return new_node;
 }
 
 void printTree(node *tree)
