@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "y.tab.h"
+#include "parser.tab.h"
 
 node *new_node(const node_type type){
   node *new_node = (node *)malloc(sizeof(node));

@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-#include "y.tab.h"
+#include "parser.tab.h"
 
 void yyerror(char *);
 char message[100];
