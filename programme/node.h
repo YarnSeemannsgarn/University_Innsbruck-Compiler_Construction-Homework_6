@@ -20,5 +20,6 @@ typedef struct _node {
 node *new_node(const node_type type);
 int get_body_count(const node_type type);
 void free_node(node *node);
+void print_node(const node * const node);
 
 #endif

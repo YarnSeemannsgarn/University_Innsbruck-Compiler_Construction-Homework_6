@@ -1,14 +1,12 @@
-LEX = flex
-YACC = bison
-CC = gcc
+YFLAGS = -d
 
 .PHONY: all clean
 
-parser: parser.o node.o lexer.o
+parser: node.o parser.o scanner.o
 
 node.o: node.c parser.y
 
-lexer.o: lexer.l parser.y
+scanner.o: scanner.l parser.y
 
 clean:
-	rm -f parser.tab.* lex.yy.c parser *.o
+	$(RM) parser *.o y.tab.h

@@ -7,10 +7,10 @@ void yyerror(char *);
 %}
 
 %union {
-        int integer;
-        double real;
-        char *string;
-        struct _node *node;
+    int integer;
+    double real;
+    char *string;
+    struct _node *node;
 }
 
 // Tokens from homework 4
@@ -31,7 +31,7 @@ void yyerror(char *);
 %%
 
 // Grammar from homework 4
-start                   : T_PROGRAM T_ID T_SEMICOLON varDec compStmt T_DOT { $$ = new_node(PROGRAM); root_node = $$; $$->body[0] = $4; $$->body[1] = $5; }
+start                   : T_PROGRAM T_ID T_SEMICOLON varDec compStmt T_DOT { $$ = new_node(PROGRAM); root_node = $$; $$->body[0] = $4; $$->body[1] = $5; free($2); }
                         ;
 
 varDec 		        : T_VAR varDecList { $$ = $2; }
@@ -154,7 +154,14 @@ void yyerror(char *s) {
 int main() {
     int status = yyparse();
     if (!status) {
-        printf("parsing successful\n");
+        printf("--> parsing successful <--\n");
+        printf("--> print parsed program: <--\n\n");
+
+	print_node(root_node);
+
+	printf("--> end of parsed program <--\n");
     }
+    free_node(root_node);
+
     return status;
 }
