@@ -31,7 +31,7 @@ void yyerror(char *);
 %%
 
 // Grammar from homework 4
-start                   : T_PROGRAM T_ID T_SEMICOLON varDec compStmt T_DOT { $$ = new_node(PROGRAM); root_node = $$; $$->body[0] = $4; $$->body[1] = $5; free($2); }
+start                   : T_PROGRAM T_ID T_SEMICOLON varDec compStmt T_DOT { $$ = new_node(PROGRAM); root_node = $$; $$->body[0] = $4; $$->body[1] = $5; }
                         ;
 
 varDec 		        : T_VAR varDecList { $$ = $2; }
