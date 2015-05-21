@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-#include "parser.tab.h"
+#include "y.tab.h"
 
 void yyerror(char *);
 char message[100];
@@ -12,7 +12,8 @@ char message[100];
 %x COMMENT
 
 WHITESPACE [ \t\n]
-DIGIT [0-9]
+INTEGER [0-9]+
+REAL [0-9]*\.[0-9]+
 ID [a-zA-Z_][a-zA-Z_0-9]*
 
 A [aA]
@@ -100,13 +101,14 @@ Z [zZ]
 "<="|"=<"				return T_LESS_EQUAL_THAN;
 "="					return T_EQUAL;
 					       
-\"(\\.|[^\\"])*\"|\'(\\.|[^\\'])*\'     return T_STRING;
+\"(\\.|[^\\"])*\"|\'(\\.|[^\\'])*\'     { yylval.string = strdup(yytext); return T_STRING; }
 					       
     /* Numbers */			       
-{DIGIT}+                                return T_NUMBER;
-					       
+{INTEGER}                               { yylval.integer = atoi(yytext); return T_NUM_INT; }
+{REAL}                                  { yylval.real = atof(yytext); return T_NUM_REAL; }
+
     /* Identifiers */			       
-{ID}                                    return T_ID;
+{ID}                                    { yylval.string = strdup(yytext); return T_ID; }
 
     /* Whitespace */
 {WHITESPACE}+                           ;

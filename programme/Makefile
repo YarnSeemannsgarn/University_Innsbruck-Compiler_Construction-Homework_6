@@ -2,16 +2,13 @@ LEX = flex
 YACC = bison
 CC = gcc
 
-all: parser
+.PHONY: all clean
 
-parser: lex.yy.c parser.tab.c
-	$(CC) -o parser parser.tab.c lex.yy.c
+parser: parser.o node.o lexer.o
 
-lex.yy.c: scanner.l parser.tab.c
-	$(LEX) scanner.l
+node.o: node.c parser.y
 
-parser.tab.c: parser.y
-	$(YACC) -d parser.y
+lexer.o: lexer.l parser.y
 
 clean:
-	rm -f parser.tab.* lex.yy.c parser
+	rm -f parser.tab.* lex.yy.c parser *.o
